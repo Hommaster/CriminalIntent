@@ -57,11 +57,12 @@ class CrimeFragment: Fragment() {
             override fun afterTextChanged(s: Editable?) {
 
             }
-        }
 
+        }
         titleField.addTextChangedListener(titleWatcher)
+
         solvedCheckBox.apply {
-            setOnCheckedChangeListener {_, isChecked ->
+            setOnCheckedChangeListener { _, isChecked ->
                 crime.isSolved = isChecked
             }
         }
