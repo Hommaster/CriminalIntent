@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -60,6 +61,8 @@ class CrimeListFragment: Fragment() {
 
         private val titleTextView: TextView = itemView.findViewById(R.id.crime_title)
         private val dateTextView: TextView = itemView.findViewById(R.id.crime_date)
+        val buttonPolice: Button = itemView.findViewById(R.id.button_cops)
+        private val solvedImageView: ImageView = itemView.findViewById(R.id.solved_crime1)
 
         init {
             itemView.setOnClickListener(this)
@@ -69,12 +72,20 @@ class CrimeListFragment: Fragment() {
             this.crime = crime
             titleTextView.text = this.crime.title
             dateTextView.text = this.crime.date.toString()
-            if(this.crime.requiresPolice) {
-                val buttonPolice: Button = itemView.findViewById(R.id.button_cops)
+            solvedImageView.visibility = if(crime.isSolved) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+
+            if(crime.requiresPolice and !crime.isSolved) {
+                buttonPolice.visibility = View.VISIBLE
                 buttonPolice.setOnClickListener {
                     Toast.makeText(context, "I'm call the cops!!", Toast.LENGTH_SHORT)
                         .show()
                 }
+            } else {
+                buttonPolice.visibility = View.GONE
             }
         }
 
@@ -97,13 +108,8 @@ class CrimeListFragment: Fragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
-            return if(viewType==0) {
                 val view = layoutInflater.inflate(R.layout.list_item_crime, parent, false)
-                CrimeHolder(view)
-            } else {
-                val view = layoutInflater.inflate(R.layout.list_item_crime_police, parent, false)
-                CrimeHolder(view)
-            }
+                return CrimeHolder(view)
         }
 
         override fun getItemCount() = crimes.size
