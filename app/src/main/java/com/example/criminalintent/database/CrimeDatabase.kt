@@ -9,10 +9,5 @@ import com.example.criminalintent.Crime
 @Database(entities = [Crime::class], version = 1, exportSchema = false)
 @TypeConverters(CrimeTypeConverter::class)
 abstract class CrimeDatabase : RoomDatabase() {
-
-    override fun init(configuration: DatabaseConfiguration) {
-        super.init(configuration)
-    }
-
     abstract fun crimeDao(): CrimeDAO
 }
