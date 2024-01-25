@@ -4,11 +4,12 @@ import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.criminalintent.databinding.ActivityMainBinding
+import java.util.UUID
 
 @SuppressLint("StaticFieldLeak")
 private lateinit var bindingClass: ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
     override fun onCreate(savedInstanceState: Bundle?) {
         bindingClass = ActivityMainBinding.inflate(layoutInflater)
         super.onCreate(savedInstanceState)
@@ -23,5 +24,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContentView(bindingClass.root)
+    }
+
+    override fun onCrimeSelected(crimeId: UUID) {
+        val fragment = CrimeFragment()
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 }
