@@ -7,11 +7,10 @@ import androidx.lifecycle.switchMap
 import java.util.UUID
 
 class CrimeDetailViewModel: ViewModel() {
-
     private val crimeRepository = CrimeRepository.get()
     private val crimeIdLiveData = MutableLiveData<UUID>()
 
-    val crimeLiveData: LiveData<Crime?> = crimeIdLiveData.switchMap {crimeId ->
+    val crimeLiveData: LiveData<Crime?> = crimeIdLiveData.switchMap { crimeId->
         crimeRepository.getCrime(crimeId)
     }
 
@@ -19,4 +18,7 @@ class CrimeDetailViewModel: ViewModel() {
         crimeIdLiveData.value = crimeId
     }
 
+    fun saveCrime(crime: Crime) {
+        crimeRepository.updateCrime(crime)
+    }
 }

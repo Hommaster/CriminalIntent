@@ -4,7 +4,6 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,8 +16,6 @@ import androidx.lifecycle.ViewModelProvider
 import java.util.UUID
 
 private const val ARG_CRIME_ID = "crime_id"
-private const val TAG = "CrimeFragment"
-
 @Suppress("DEPRECATION")
 class CrimeFragment: Fragment() {
 
@@ -65,7 +62,7 @@ class CrimeFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         crimeDetailViewModel.crimeLiveData.observe(
             viewLifecycleOwner,
-            Observer {crime ->
+            Observer {crime->
                 crime?.let {
                     this.crime = crime
                     updateUI()
@@ -100,6 +97,12 @@ class CrimeFragment: Fragment() {
         }
 
     }
+
+    override fun onStop() {
+        super.onStop()
+        crimeDetailViewModel.saveCrime(crime)
+    }
+
 
     companion object {
         fun newInstance(crimeId: UUID): CrimeFragment {
