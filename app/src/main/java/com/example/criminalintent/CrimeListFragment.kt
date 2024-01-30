@@ -1,6 +1,5 @@
 package com.example.criminalintent
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,30 +14,19 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Locale
-import java.util.UUID
 
 private const val TAG = "CrimeListFragment"
 
 class CrimeListFragment: Fragment() {
 
-    interface Callbacks {
-        fun onCrimeSelected(crimeId: UUID)
-    }
-
     private val crimeListViewModel: CrimeListViewModel by lazy {
         ViewModelProvider(this)[CrimeListViewModel::class.java]
     }
-
-    private var callbacks: Callbacks? = null
 
     private lateinit var crimeRecyclerView: RecyclerView
 
     private var adapter: CrimeAdapter? = CrimeAdapter(emptyList())
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        callbacks = context as Callbacks?
-    }
 
 
     override fun onCreateView(
@@ -55,21 +43,18 @@ class CrimeListFragment: Fragment() {
         return view
     }
 
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         crimeListViewModel.crimeListLiveData.observe(
             viewLifecycleOwner,
             Observer { crime ->
                 crime?.let {
-                    Log.i(TAG, "Got crimes ${crime.size}")
                     updateUI(crime)
                 }
-            })
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        callbacks = null
+            }
+        )
     }
 
     private fun updateUI(crimes: List<Crime>) {
@@ -91,7 +76,6 @@ class CrimeListFragment: Fragment() {
 
         private val titleTextView: TextView = itemView.findViewById(R.id.crime_title)
         private val dateTextView: TextView = itemView.findViewById(R.id.crime_date)
-//        val buttonPolice: Button = itemView.findViewById(R.id.button_cops)
         private val solvedImageView: ImageView = itemView.findViewById(R.id.solved_crime1)
 
         init {
@@ -114,7 +98,7 @@ class CrimeListFragment: Fragment() {
         }
 
         override fun onClick(v: View?) {
-            callbacks?.onCrimeSelected(crime.id)
+
         }
 
     }
@@ -122,8 +106,8 @@ class CrimeListFragment: Fragment() {
     private inner class CrimeAdapter(var crimes: List<Crime>): RecyclerView.Adapter<CrimeHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
-                val view = layoutInflater.inflate(R.layout.list_item_crime, parent, false)
-                return CrimeHolder(view)
+            val view = layoutInflater.inflate(R.layout.list_item_crime, parent, false)
+            return CrimeHolder(view)
         }
 
         override fun getItemCount() = crimes.size

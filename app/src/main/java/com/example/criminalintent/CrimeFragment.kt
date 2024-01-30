@@ -16,7 +16,6 @@ import androidx.lifecycle.ViewModelProvider
 import java.util.UUID
 
 private const val ARG_CRIME_ID = "crime_id"
-@Suppress("DEPRECATION")
 class CrimeFragment: Fragment() {
 
     private lateinit var crime: Crime
@@ -30,13 +29,13 @@ class CrimeFragment: Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        crime = Crime()
-        val crimeId: UUID = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getSerializable(ARG_CRIME_ID, UUID::class.java) as UUID
-        } else {
-            arguments?.getSerializable(ARG_CRIME_ID) as UUID
-        }
-        crimeDetailViewModel.loadCrime(crimeId)
+//        crime = Crime()
+//        val crimeId: UUID = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            arguments?.getSerializable(ARG_CRIME_ID, UUID::class.java) as UUID
+//        } else {
+//            arguments?.getSerializable(ARG_CRIME_ID) as UUID
+//        }
+//        crimeDetailViewModel.loadCrime(crimeId)
     }
 
     override fun onCreateView(
@@ -104,16 +103,16 @@ class CrimeFragment: Fragment() {
     }
 
 
-    companion object {
-        fun newInstance(crimeId: UUID): CrimeFragment {
-            val args = Bundle().apply {
-                putSerializable(ARG_CRIME_ID, crimeId)
-            }
-            return CrimeFragment().apply {
-                arguments = args
-            }
-        }
-    }
+//    companion object {
+//        fun newInstance(crimeId: UUID): CrimeFragment {
+//            val args = Bundle().apply {
+//                putSerializable(ARG_CRIME_ID, crimeId)
+//            }
+//            return CrimeFragment().apply {
+//                arguments = args
+//            }
+//        }
+//    }
 
     private fun updateUI() {
         titleField.setText(crime.title)
