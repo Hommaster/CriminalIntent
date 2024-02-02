@@ -7,5 +7,19 @@
     <fragment
         android:id="@+id/crimeListFragment"
         android:name="com.example.criminalintent.CrimeListFragment"
-        android:label="CrimeListFragment" />
+        android:label="CrimeListFragment" >
+        <action
+            android:id="@+id/action_crimeListFragment_to_crimeFragment"
+            app:destination="@id/crimeFragment"
+            app:enterAnim="@anim/nav_default_pop_enter_anim"
+            app:exitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+    <fragment
+        android:id="@+id/crimeFragment"
+        android:name="com.example.criminalintent.CrimeFragment"
+        android:label="CrimeFragment" >
+        <argument
+            android:name="myArg"
+            />
+    </fragment>
 </navigation>

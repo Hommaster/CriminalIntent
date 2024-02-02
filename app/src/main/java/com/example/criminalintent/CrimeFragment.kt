@@ -29,13 +29,17 @@ class CrimeFragment: Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        crime = Crime()
+        crime = Crime()
 //        val crimeId: UUID = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 //            arguments?.getSerializable(ARG_CRIME_ID, UUID::class.java) as UUID
 //        } else {
 //            arguments?.getSerializable(ARG_CRIME_ID) as UUID
 //        }
 //        crimeDetailViewModel.loadCrime(crimeId)
+
+        val crimeID: UUID = UUID.fromString(arguments?.getString("myArg"))
+
+        crimeDetailViewModel.loadCrime(crimeID)
     }
 
     override fun onCreateView(
