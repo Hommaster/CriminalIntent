@@ -15,9 +15,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import java.util.UUID
 
-private const val ARG_CRIME_ID = "crime_id"
-private const val DIALOG_DATE = "dialog_date"
-
 class CrimeFragment: Fragment() {
 
     private lateinit var crime: Crime
@@ -47,11 +44,10 @@ class CrimeFragment: Fragment() {
         dateButton = view.findViewById(R.id.crime_date) as Button
 
         dateButton.setOnClickListener {
-            val action = CrimeFragmentDirections.actionCrimeFragmentToDatePickerFragment(crime.date.time)
+            val date: Long = crime.date.time
+            val action =
+                CrimeFragmentDirections.actionCrimeFragmentToDatePickerFragment(date)
             findNavController().navigate(action)
-//            DatePickerFragment().apply {
-//                show(this@CrimeFragment.parentFragmentManager, DIALOG_DATE)
-//            }
         }
 
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
