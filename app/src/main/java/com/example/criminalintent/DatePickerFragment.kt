@@ -13,7 +13,6 @@ import java.util.GregorianCalendar
 class DatePickerFragment: DialogFragment() {
 
     private lateinit var crime: Crime
-    private lateinit var datePastUpdate: Date
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,8 +34,6 @@ class DatePickerFragment: DialogFragment() {
         val dateListener = DatePickerDialog.OnDateSetListener { _:
                                                                 DatePicker, year: Int, month: Int, day: Int ->
             val resultDate: Date = GregorianCalendar(year, month, day).time
-            datePastUpdate = resultDate
-            updateUI(resultDate)
         }
 
         return DatePickerDialog(
@@ -53,7 +50,6 @@ class DatePickerFragment: DialogFragment() {
     }
 
     override fun onStop() {
-        Log.d("MyTag", "$datePastUpdate")
         super.onStop()
     }
 

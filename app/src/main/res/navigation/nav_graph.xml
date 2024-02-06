@@ -24,10 +24,6 @@
         <action
             android:id="@+id/action_crimeFragment_to_datePickerFragment"
             app:destination="@id/datePickerFragment" />
-        <argument
-            android:name="newDate"
-            app:argType="long"
-            />
     </fragment>
     <dialog
         android:id="@+id/datePickerFragment"
@@ -37,8 +33,5 @@
             android:name="ArgDate"
             app:argType="long"
             />
-        <action
-            android:id="@+id/action_datePickerFragment_to_crimeFragment"
-            app:destination="@id/crimeFragment" />
     </dialog>
 </navigation>
