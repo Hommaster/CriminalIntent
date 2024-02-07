@@ -28,8 +28,8 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         ViewModelProvider(this)[CrimeDetailViewModel::class.java]
     }
 
-    override fun onFragmentResult(requestCode: String, result: Bundle) {
-        when(requestCode) {
+    override fun onFragmentResult(requestKey: String, result: Bundle) {
+        when(requestKey) {
             REQUEST_DATE -> {
                 crime.date = DatePickerFragment.getSelectedDate(result)
                 updateUI()
@@ -56,7 +56,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
         dateButton.setOnClickListener {
             DatePickerFragment
-                .newInstance(crime.date, REQUEST_DATE)
+                .newInstance(REQUEST_DATE, crime.date)
                 .show(childFragmentManager, REQUEST_DATE)
 
         }
