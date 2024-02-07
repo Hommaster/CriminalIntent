@@ -10,15 +10,14 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentResultListener
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
-import java.util.Date
 import java.util.UUID
 
-private const val DIALOG_DATE = "dialog_date"
+private const val REQUEST_DATE = "requestDate"
 
-class CrimeFragment: Fragment(), DatePickerFragment.Callbacks {
+class CrimeFragment: Fragment(), FragmentResultListener {
 
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
@@ -27,6 +26,15 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks {
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this)[CrimeDetailViewModel::class.java]
+    }
+
+    override fun onFragmentResult(requestCode: String, result: Bundle) {
+        when(requestCode) {
+            REQUEST_DATE -> {
+                crime.date = DatePickerFragment.getSelectedDate(result)
+                updateUI()
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,10 +55,10 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks {
         dateButton = view.findViewById(R.id.crime_date) as Button
 
         dateButton.setOnClickListener {
-            DatePickerFragment.newInstance(crime.date).apply {
-                show(this@CrimeFragment.parentFragmentManager, DIALOG_DATE)
-                setTargetFragment(this@CrimeFragment, 0)
-            }
+            DatePickerFragment
+                .newInstance(crime.date, REQUEST_DATE)
+                .show(childFragmentManager, REQUEST_DATE)
+
         }
 
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
@@ -69,6 +77,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks {
                 }
             }
         )
+        childFragmentManager.setFragmentResultListener(REQUEST_DATE, viewLifecycleOwner, this)
     }
 
     override fun onStart() {
@@ -101,11 +110,6 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks {
     override fun onStop() {
         super.onStop()
         crimeDetailViewModel.saveCrime(crime)
-    }
-
-    override fun onDateSelected(date: Date) {
-        crime.date = date
-        updateUI()
     }
 
     private fun updateUI() {
