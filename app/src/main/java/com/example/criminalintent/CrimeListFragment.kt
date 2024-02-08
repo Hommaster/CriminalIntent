@@ -87,8 +87,8 @@ class CrimeListFragment: Fragment() {
             }
 
             val simpleDateFormat = SimpleDateFormat("EE, MMM, dd, yyyy, HH:mm:ss", Locale.ENGLISH)
-            val example : String = simpleDateFormat.format(this.crime.date).toString()
-            dateTextView.text = example
+            val date : String = simpleDateFormat.format(this.crime.date).toString()
+            dateTextView.text = date
         }
 
         override fun onClick(v: View?) {

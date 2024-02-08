@@ -17,14 +17,6 @@ private const val RESULT_DATE_KEY = "resultKey"
 
 class DatePickerFragment: DialogFragment() {
 
-    private lateinit var crime: Crime
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        crime = Crime()
-    }
-
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val date = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             arguments?.getSerializable(ARG_DATE, Date::class.java) as Date

@@ -1,5 +1,6 @@
 package com.example.criminalintent
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,15 +14,19 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import java.text.SimpleDateFormat
+import java.util.Locale
 import java.util.UUID
 
 private const val REQUEST_DATE = "requestDate"
+private const val REQUEST_DATE_1 = "requestDate1"
 
 class CrimeFragment: Fragment(), FragmentResultListener {
 
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
     private lateinit var dateButton: Button
+    private lateinit var timeButton: Button
     private lateinit var solvedCheckBox: CheckBox
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
@@ -45,6 +50,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         crimeDetailViewModel.loadCrime(crimeID)
     }
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,12 +59,19 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         val view = inflater.inflate(R.layout.fragment_crime, container, false)
         titleField = view.findViewById(R.id.crime_title) as EditText
         dateButton = view.findViewById(R.id.crime_date) as Button
+        timeButton = view.findViewById(R.id.crime_time) as Button
 
         dateButton.setOnClickListener {
             DatePickerFragment
                 .newInstance(REQUEST_DATE, crime.date)
                 .show(childFragmentManager, REQUEST_DATE)
 
+        }
+
+        timeButton.setOnClickListener {
+            TimePickerFragment
+                .newInstance(crime.date)
+                .show(childFragmentManager, REQUEST_DATE_1)
         }
 
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
@@ -114,7 +127,15 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
     private fun updateUI() {
         titleField.setText(crime.title)
-        dateButton.text = crime.date.toString()
+
+        val simpleDateFormat = SimpleDateFormat("EE, MMM, dd, yyyy", Locale.ENGLISH)
+        val date : String = simpleDateFormat.format(this.crime.date).toString()
+        dateButton.text = date
+
+        val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.ENGLISH)
+        val time : String = simpleTimeFormat.format(this.crime.date).toString()
+        timeButton.text = time
+
         solvedCheckBox.apply {
             isChecked = crime.isSolved
             jumpDrawablesToCurrentState()

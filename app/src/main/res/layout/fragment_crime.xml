@@ -33,6 +33,12 @@
         android:layout_height="wrap_content"
         tools:text="Thur Jan 11 1:08 BY 2024" />
 
+    <Button
+        android:id="@+id/crime_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="11:00" />
+
     <CheckBox
         android:id="@+id/crime_solved"
         android:layout_width="match_parent"
