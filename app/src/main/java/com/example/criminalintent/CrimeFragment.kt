@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,9 +35,15 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     }
 
     override fun onFragmentResult(requestKey: String, result: Bundle) {
+        Log.d("LogResult", requestKey)
         when(requestKey) {
             REQUEST_DATE -> {
                 crime.date = DatePickerFragment.getSelectedDate(result)
+                updateUI()
+            }
+
+            REQUEST_DATE_1 -> {
+                crime.date = TimePickerFragment.getSelectedDate(result)
                 updateUI()
             }
         }
@@ -70,7 +77,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
         timeButton.setOnClickListener {
             TimePickerFragment
-                .newInstance(crime.date)
+                .newInstance(crime.date, REQUEST_DATE_1)
                 .show(childFragmentManager, REQUEST_DATE_1)
         }
 
@@ -91,6 +98,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             }
         )
         childFragmentManager.setFragmentResultListener(REQUEST_DATE, viewLifecycleOwner, this)
+        childFragmentManager.setFragmentResultListener(REQUEST_DATE_1, viewLifecycleOwner, this)
     }
 
     override fun onStart() {

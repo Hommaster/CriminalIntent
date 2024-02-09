@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.app.Dialog
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.DatePicker
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
@@ -36,6 +37,7 @@ class DatePickerFragment: DialogFragment() {
             val result = Bundle().apply {
                 putSerializable(RESULT_DATE_KEY, resultDate)
             }
+            Log.d("DPFdate", "$resultDate")
 
             val resultRequestCode = requireArguments().getString(ARG_REQUEST_CODE, "")
             setFragmentResult(resultRequestCode, result)
