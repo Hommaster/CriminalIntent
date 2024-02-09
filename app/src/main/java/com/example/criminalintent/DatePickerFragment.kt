@@ -4,7 +4,6 @@ import android.app.DatePickerDialog
 import android.app.Dialog
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.DatePicker
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.DialogFragment
@@ -14,7 +13,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
-import java.util.GregorianCalendar
 
 private const val ARG_DATE = "arg_date"
 private const val ARG_REQUEST_CODE = "requestCode"
@@ -41,8 +39,6 @@ class DatePickerFragment: DialogFragment() {
         val initialSecond = calendar.get(Calendar.SECOND)
 
         val dateListener = DatePickerDialog.OnDateSetListener { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            val resultDate: Date = GregorianCalendar(year, month, dayOfMonth).time
-
             val current = LocalDateTime.of(
                 year,
                 month,
