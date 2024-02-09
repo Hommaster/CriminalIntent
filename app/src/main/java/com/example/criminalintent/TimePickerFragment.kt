@@ -37,7 +37,7 @@ class TimePickerFragment: DialogFragment() {
         calendar.time = date
 
         val initialYear = calendar.get(Calendar.YEAR)
-        val initialMonth = calendar.get(Calendar.MONTH)
+        val initialMonth = calendar.get(Calendar.MONTH) + 1
         val initialDay = calendar.get(Calendar.DAY_OF_MONTH)
 
         val initialHour = calendar.get(Calendar.HOUR)
@@ -46,7 +46,6 @@ class TimePickerFragment: DialogFragment() {
 
 
         val timeListener = TimePickerDialog.OnTimeSetListener { _: TimePicker, hourOfDay, minute ->
-            val resultTime = Time(hourOfDay, minute, 0)
 
             val current = LocalDateTime.of(
                 initialYear,
