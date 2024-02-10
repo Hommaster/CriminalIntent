@@ -41,7 +41,7 @@ class DatePickerFragment: DialogFragment() {
         val dateListener = DatePickerDialog.OnDateSetListener { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
             val current = LocalDateTime.of(
                 year,
-                month,
+                month + 1,
                 dayOfMonth,
                 initialHour,
                 initialMinute,
