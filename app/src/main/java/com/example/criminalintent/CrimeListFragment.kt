@@ -2,11 +2,18 @@ package com.example.criminalintent
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -17,7 +24,7 @@ import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class CrimeListFragment: Fragment() {
+class CrimeListFragment: Fragment(), MenuProvider {
 
     private val crimeListViewModel: CrimeListViewModel by lazy {
         ViewModelProvider(this)[CrimeListViewModel::class.java]
@@ -44,9 +51,10 @@ class CrimeListFragment: Fragment() {
     }
 
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
         crimeListViewModel.crimeListLiveData.observe(
             viewLifecycleOwner,
             Observer { crime ->
@@ -55,6 +63,25 @@ class CrimeListFragment: Fragment() {
                 }
             }
         )
+    }
+
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.fragment_crime_list, menu)
+    }
+
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        return when (menuItem.itemId) {
+            R.id.new_crime -> {
+
+                val crime = Crime()
+                crimeListViewModel.addCrime(crime)
+                val action = CrimeListFragmentDirections.actionCrimeListFragmentToCrimeFragment(crime.id.toString())
+                findNavController().navigate(action)
+
+                true
+            }
+            else -> false
+        }
     }
 
     private fun updateUI(crimes: List<Crime>) {
