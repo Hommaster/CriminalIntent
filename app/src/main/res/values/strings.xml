@@ -8,4 +8,6 @@
     <string name="crime_title">Crime Title</string>
     <string name="crime_date">Crime Date</string>
     <string name="new_crime">New Crime</string>
+    <string name="create_fragment">Create</string>
+    <string name="back_without_save">Return without saving</string>
 </resources>

@@ -21,5 +21,8 @@
         <argument
             android:name="myArg"
             />
+        <action
+            android:id="@+id/action_crimeFragment_to_crimeListFragment"
+            app:destination="@id/crimeListFragment" />
     </fragment>
 </navigation>

@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.UUID
@@ -29,6 +30,8 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     private lateinit var dateButton: Button
     private lateinit var timeButton: Button
     private lateinit var solvedCheckBox: CheckBox
+    private lateinit var sendResultButton: Button
+    private lateinit var returnWithoutSaving: Button
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this)[CrimeDetailViewModel::class.java]
@@ -67,6 +70,8 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         titleField = view.findViewById(R.id.crime_title) as EditText
         dateButton = view.findViewById(R.id.crime_date) as Button
         timeButton = view.findViewById(R.id.crime_time) as Button
+        sendResultButton = view.findViewById(R.id.create_button) as Button
+        returnWithoutSaving = view.findViewById(R.id.button_return_without_saving) as Button
 
         dateButton.setOnClickListener {
             DatePickerFragment
@@ -79,6 +84,17 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             TimePickerFragment
                 .newInstance(crime.date, REQUEST_DATE_1)
                 .show(childFragmentManager, REQUEST_DATE_1)
+        }
+
+        sendResultButton.setOnClickListener {
+            crimeDetailViewModel.saveCrime(crime)
+            val action = CrimeFragmentDirections.actionCrimeFragmentToCrimeListFragment()
+            findNavController().navigate(action)
+        }
+
+        returnWithoutSaving.setOnClickListener {
+            val action = CrimeFragmentDirections.actionCrimeFragmentToCrimeListFragment()
+            findNavController().navigate(action)
         }
 
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
@@ -126,11 +142,6 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             }
         }
 
-    }
-
-    override fun onStop() {
-        super.onStop()
-        crimeDetailViewModel.saveCrime(crime)
     }
 
     private fun updateUI() {
