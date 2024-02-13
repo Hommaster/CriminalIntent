@@ -37,6 +37,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         ViewModelProvider(this)[CrimeDetailViewModel::class.java]
     }
 
+    //result from DatePickerFragment(Request_date) and TimePickerFragment(Request_date_1)
     override fun onFragmentResult(requestKey: String, result: Bundle) {
         Log.d("LogResult", requestKey)
         when(requestKey) {
@@ -55,8 +56,11 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         crime = Crime()
+
+        // from CrimeListFragment using Navigation get ID crime
         val crimeID: UUID = UUID.fromString(arguments?.getString("myArg"))
 
+        //load to crimeLiveData crimeID
         crimeDetailViewModel.loadCrime(crimeID)
     }
 
@@ -104,6 +108,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        //load from crimeLiveData crime
         crimeDetailViewModel.crimeLiveData.observe(
             viewLifecycleOwner,
             Observer {crime->

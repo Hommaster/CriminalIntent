@@ -53,8 +53,11 @@ class CrimeListFragment: Fragment(), MenuProvider {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        //add host for MenuProvider
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
         crimeListViewModel.crimeListLiveData.observe(
             viewLifecycleOwner,
             Observer { crime ->
