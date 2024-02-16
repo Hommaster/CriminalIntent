@@ -116,7 +116,7 @@ class CrimeListFragment: Fragment(), MenuProvider {
                 View.GONE
             }
 
-            val simpleDateFormat = SimpleDateFormat("EE, MMM, dd, yyyy, HH:mm:ss", Locale.ENGLISH)
+            val simpleDateFormat = SimpleDateFormat("EE, MMM, dd, yyyy, HH:mm:ss", Locale("ru"))
             val date : String = simpleDateFormat.format(this.crime.date).toString()
             dateTextView.text = date
         }

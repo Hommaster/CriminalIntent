@@ -39,7 +39,6 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
     //result from DatePickerFragment(Request_date) and TimePickerFragment(Request_date_1)
     override fun onFragmentResult(requestKey: String, result: Bundle) {
-        Log.d("LogResult", requestKey)
         when(requestKey) {
             REQUEST_DATE -> {
                 crime.date = DatePickerFragment.getSelectedDate(result)
@@ -60,7 +59,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         // from CrimeListFragment using Navigation get ID crime
         val crimeID: UUID = UUID.fromString(arguments?.getString("myArg"))
 
-        //load to crimeLiveData crimeID
+        //create new crime with crimeLiveData crimeID
         crimeDetailViewModel.loadCrime(crimeID)
     }
 
@@ -152,11 +151,11 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     private fun updateUI() {
         titleField.setText(crime.title)
 
-        val simpleDateFormat = SimpleDateFormat("EE, MMM, dd, yyyy", Locale.ENGLISH)
+        val simpleDateFormat = SimpleDateFormat("EE, MMM, dd, yyyy", Locale("ru"))
         val date : String = simpleDateFormat.format(this.crime.date).toString()
         dateButton.text = date
 
-        val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.ENGLISH)
+        val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale("ru"))
         val time : String = simpleTimeFormat.format(this.crime.date).toString()
         timeButton.text = time
 
