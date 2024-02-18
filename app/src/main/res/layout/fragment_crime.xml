@@ -56,5 +56,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/back_without_save" />
+    <Button
+        android:id="@+id/button_delete_this_classes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/delete_classes" />
 
 </LinearLayout>

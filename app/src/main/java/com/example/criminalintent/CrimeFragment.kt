@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,6 +31,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     private lateinit var solvedCheckBox: CheckBox
     private lateinit var sendResultButton: Button
     private lateinit var returnWithoutSaving: Button
+    private lateinit var buttonDelete: Button
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this)[CrimeDetailViewModel::class.java]
@@ -75,6 +75,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         timeButton = view.findViewById(R.id.crime_time) as Button
         sendResultButton = view.findViewById(R.id.create_button) as Button
         returnWithoutSaving = view.findViewById(R.id.button_return_without_saving) as Button
+        buttonDelete = view.findViewById(R.id.button_delete_this_classes) as Button
 
         dateButton.setOnClickListener {
             DatePickerFragment
@@ -91,13 +92,16 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
         sendResultButton.setOnClickListener {
             crimeDetailViewModel.saveCrime(crime)
-            val action = CrimeFragmentDirections.actionCrimeFragmentToCrimeListFragment()
-            findNavController().navigate(action)
+            redirectionToListClasses()
         }
 
         returnWithoutSaving.setOnClickListener {
-            val action = CrimeFragmentDirections.actionCrimeFragmentToCrimeListFragment()
-            findNavController().navigate(action)
+            redirectionToListClasses()
+        }
+
+        buttonDelete.setOnClickListener {
+            redirectionToListClasses()
+            crimeDetailViewModel.deleteCrime(crime)
         }
 
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
@@ -163,6 +167,11 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             isChecked = crime.isSolved
             jumpDrawablesToCurrentState()
         }
+    }
+
+    private fun redirectionToListClasses() {
+        val action = CrimeFragmentDirections.actionCrimeFragmentToCrimeListFragment()
+        findNavController().navigate(action)
     }
 
 

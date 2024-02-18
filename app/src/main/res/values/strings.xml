@@ -10,4 +10,7 @@
     <string name="new_crime">New Crime</string>
     <string name="create_fragment">Create</string>
     <string name="back_without_save">Return without saving</string>
+    <string name="delete_classes">Delete this crime</string>
+    <string name="text_about_isEmptyCrime">Lists of criminal intent is empty..</string>
+    <string name="first_button">Create my first crime!</string>
 </resources>

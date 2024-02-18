@@ -1,5 +1,6 @@
 package com.example.criminalintent
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -7,9 +8,9 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -32,10 +33,14 @@ class CrimeListFragment: Fragment(), MenuProvider {
 
     private lateinit var crimeRecyclerView: RecyclerView
 
+    private lateinit var textEmpty: TextView
+    private lateinit var buttonEmpty: Button
+
     private var adapter: CrimeAdapter? = CrimeAdapter(emptyList())
 
 
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -47,6 +52,17 @@ class CrimeListFragment: Fragment(), MenuProvider {
             view.findViewById(R.id.crime_recycler_view) as RecyclerView
         crimeRecyclerView.layoutManager = LinearLayoutManager(context)
         crimeRecyclerView.adapter = adapter
+
+        textEmpty = view.findViewById(R.id.text_about_empty) as TextView
+        buttonEmpty = view.findViewById(R.id.button__for_create_first_crime) as Button
+
+        buttonEmpty.setOnClickListener {
+            val crime = Crime()
+            crimeListViewModel.addCrime(crime)
+            val action = CrimeListFragmentDirections.actionCrimeListFragmentToCrimeFragment(crime.id.toString())
+            findNavController().navigate(action)
+        }
+
         return view
     }
 
@@ -88,8 +104,17 @@ class CrimeListFragment: Fragment(), MenuProvider {
     }
 
     private fun updateUI(crimes: List<Crime>) {
-        adapter = CrimeAdapter(crimes)
-        crimeRecyclerView.adapter = adapter
+        if(crimes.isNotEmpty()) {
+            adapter = CrimeAdapter(crimes)
+            crimeRecyclerView.adapter = adapter
+            crimeRecyclerView.visibility = View.VISIBLE
+            textEmpty.visibility = View.GONE
+            buttonEmpty.visibility = View.GONE
+        } else {
+            crimeRecyclerView.visibility = View.GONE
+            textEmpty.visibility = View.VISIBLE
+            buttonEmpty.visibility = View.VISIBLE
+        }
     }
 
     private inner class CrimeHolder(view: View):
