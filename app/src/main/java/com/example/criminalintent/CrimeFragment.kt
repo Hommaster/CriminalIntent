@@ -1,9 +1,11 @@
 package com.example.criminalintent
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +24,8 @@ import java.util.UUID
 private const val REQUEST_DATE = "requestDate"
 private const val REQUEST_DATE_1 = "requestDate1"
 
+private const val DATE_FORMAT = "EEE, MMM, dd"
+
 class CrimeFragment: Fragment(), FragmentResultListener {
 
     private lateinit var crime: Crime
@@ -30,8 +34,11 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     private lateinit var timeButton: Button
     private lateinit var solvedCheckBox: CheckBox
     private lateinit var sendResultButton: Button
+
     private lateinit var returnWithoutSaving: Button
     private lateinit var buttonDelete: Button
+
+    private lateinit var buttonReport: Button
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this)[CrimeDetailViewModel::class.java]
@@ -77,6 +84,8 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         returnWithoutSaving = view.findViewById(R.id.button_return_without_saving) as Button
         buttonDelete = view.findViewById(R.id.button_delete_this_classes) as Button
 
+        buttonReport = view.findViewById(R.id.crime_report) as Button
+
         dateButton.setOnClickListener {
             DatePickerFragment
                 .newInstance(REQUEST_DATE, crime.date)
@@ -102,6 +111,16 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         buttonDelete.setOnClickListener {
             redirectionToListClasses()
             crimeDetailViewModel.deleteCrime(crime)
+        }
+
+        buttonReport.setOnClickListener {
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, getCrimeReport())
+                putExtra(Intent.EXTRA_SUBJECT, R.string.crime_report_subject)
+            }.also {intent ->
+                startActivity(intent)
+            }
         }
 
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
@@ -167,6 +186,25 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             isChecked = crime.isSolved
             jumpDrawablesToCurrentState()
         }
+    }
+
+    private fun getCrimeReport(): String {
+        val solvedString = if(crime.isSolved) {
+            getString(R.string.crime_report_solved)
+        } else {
+            getString(R.string.crime_report_unsolved)
+        }
+
+        val suspectString: String = if(crime.suspect.isBlank()) {
+            getString(R.string.crime_report_no_suspect)
+        } else {
+            getString(R.string.crime_report_suspect)
+        }
+
+        val dateString: String = DateFormat.format(DATE_FORMAT, crime.date).toString()
+
+        return getString(R.string.crime_report, crime.title, dateString, solvedString, suspectString)
+
     }
 
     private fun redirectionToListClasses() {
