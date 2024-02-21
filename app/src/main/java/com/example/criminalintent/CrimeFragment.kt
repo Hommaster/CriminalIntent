@@ -32,8 +32,6 @@ private const val REQUEST_DATE_1 = "requestDate1"
 
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
-private const val REQUEST_CONTACT = 1
-
 class CrimeFragment: Fragment(), FragmentResultListener {
 
     private lateinit var crime: Crime
