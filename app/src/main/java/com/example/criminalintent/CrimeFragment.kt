@@ -1,8 +1,11 @@
 package com.example.criminalintent
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
@@ -12,11 +15,14 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.room.util.query
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.UUID
@@ -25,6 +31,8 @@ private const val REQUEST_DATE = "requestDate"
 private const val REQUEST_DATE_1 = "requestDate1"
 
 private const val DATE_FORMAT = "EEE, MMM, dd"
+
+private const val REQUEST_CONTACT = 1
 
 class CrimeFragment: Fragment(), FragmentResultListener {
 
@@ -39,9 +47,32 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     private lateinit var buttonDelete: Button
 
     private lateinit var buttonReport: Button
+    private lateinit var suspectButton: Button
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this)[CrimeDetailViewModel::class.java]
+    }
+
+    private val resultLaunch = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        result: ActivityResult ->
+        if(result.resultCode == Activity.RESULT_OK) {
+            val contactUri: Uri = result.data?.data!!
+            val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+            val cursor = contactUri.let {
+                requireActivity().contentResolver
+                    .query(it, queryFields, null, null, null)
+            }!!
+            cursor.use {
+                if(it.count == 0) {
+                    return@registerForActivityResult
+                }
+                it.moveToFirst()
+                val suspect = it.getString(0)
+                crime.suspect = suspect.toString()
+                suspectButton.text = suspect
+                crimeDetailViewModel.saveCrime(crime)
+            }
+        }
     }
 
     //result from DatePickerFragment(Request_date) and TimePickerFragment(Request_date_1)
@@ -85,6 +116,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         buttonDelete = view.findViewById(R.id.button_delete_this_classes) as Button
 
         buttonReport = view.findViewById(R.id.crime_report) as Button
+        suspectButton = view.findViewById(R.id.crime_suspect) as Button
 
         dateButton.setOnClickListener {
             DatePickerFragment
@@ -113,13 +145,22 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             crimeDetailViewModel.deleteCrime(crime)
         }
 
+        suspectButton.apply {
+            val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+
+            setOnClickListener {
+                resultLaunch.launch(pickContactIntent)
+            }
+        }
+
         buttonReport.setOnClickListener {
             Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, getCrimeReport())
                 putExtra(Intent.EXTRA_SUBJECT, R.string.crime_report_subject)
             }.also {intent ->
-                startActivity(intent)
+                val chooserIntent = Intent.createChooser(intent, getString(R.string.crime_report))
+                startActivity(chooserIntent)
             }
         }
 
@@ -186,6 +227,10 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             isChecked = crime.isSolved
             jumpDrawablesToCurrentState()
         }
+
+        if(crime.suspect.isNotEmpty()) {
+            suspectButton.text = crime.suspect
+        }
     }
 
     private fun getCrimeReport(): String {
@@ -198,7 +243,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         val suspectString: String = if(crime.suspect.isBlank()) {
             getString(R.string.crime_report_no_suspect)
         } else {
-            getString(R.string.crime_report_suspect)
+            getString(R.string.crime_report_suspect, crime.suspect)
         }
 
         val dateString: String = DateFormat.format(DATE_FORMAT, crime.date).toString()
