@@ -94,8 +94,7 @@ class CrimeListFragment: Fragment(), MenuProvider {
 
                 val crime = Crime()
                 crimeListViewModel.addCrime(crime)
-                val action = CrimeListFragmentDirections.actionCrimeListFragmentToCrimeFragment(crime.id.toString())
-                findNavController().navigate(action)
+                createCrimeIntent(crime)
 
                 true
             }
@@ -147,8 +146,7 @@ class CrimeListFragment: Fragment(), MenuProvider {
         }
 
         override fun onClick(v: View?) {
-            val action = CrimeListFragmentDirections.actionCrimeListFragmentToCrimeFragment(crime.id.toString())
-            findNavController().navigate(action)
+            createCrimeIntent(crime)
         }
 
     }
@@ -177,6 +175,11 @@ class CrimeListFragment: Fragment(), MenuProvider {
         override fun areContentsTheSame(oldItem: Crime, newItem: Crime): Boolean {
             return oldItem == newItem
         }
+    }
+
+    private fun createCrimeIntent(crime: Crime) {
+        val action = CrimeListFragmentDirections.actionCrimeListFragmentToCrimeFragment(crime.id.toString())
+        findNavController().navigate(action)
     }
 
 }
