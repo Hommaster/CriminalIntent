@@ -17,7 +17,6 @@ import android.widget.CheckBox
 import android.widget.EditText
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.lifecycle.Observer
@@ -26,7 +25,11 @@ import androidx.navigation.fragment.findNavController
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.UUID
-import java.util.jar.Manifest
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat
 
 private const val REQUEST_DATE = "requestDate"
 private const val REQUEST_DATE_1 = "requestDate1"
@@ -52,6 +55,8 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this)[CrimeDetailViewModel::class.java]
     }
+
+    private lateinit var permissionLauncher: ActivityResultLauncher<String>
 
     private val resultLaunch = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result: ActivityResult ->
@@ -94,20 +99,9 @@ class CrimeFragment: Fragment(), FragmentResultListener {
                     it?.moveToFirst()
                     val phoneNumValue = it!!.getString(0)
                     suspectPhoneButton.text = phoneNumValue
+                    crime.phone = phoneNumValue
+                    crimeDetailViewModel.saveCrime(crime)
                 }
-            }
-            val queryNumber = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
-            val cursorPhone = contactUri.let {
-                requireActivity().contentResolver
-                    .query(it, queryNumber, null, null, null)
-            }!!
-            cursorPhone.use {
-                if(it.count == 0) {
-                    return@registerForActivityResult
-                }
-                it.moveToFirst()
-                val number = it.getString(0)
-                suspectPhoneButton.text = number
             }
         }
     }
@@ -136,6 +130,8 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
         //create new crime with crimeLiveData crimeID
         crimeDetailViewModel.loadCrime(crimeID)
+        registerPermissionListener()
+        checkPermissionReadContacts()
     }
 
     @SuppressLint("MissingInflatedId")
@@ -184,18 +180,20 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         }
 
         suspectButton.apply {
-            com.example.criminalintent.Manifest.permission.
             val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
 
             setOnClickListener {
                 resultLaunch.launch(pickContactIntent)
             }
+        }
 
-//            val packageManager: PackageManager = requireActivity().packageManager
-//            val resolvedActivity: ResolveInfo? = packageManager.resolveActivity(pickContactIntent, PackageManager.MATCH_DEFAULT_ONLY)
-//            if(resolvedActivity == null) {
-//                isEnabled = false
-//            }
+        suspectPhoneButton.setOnClickListener {
+            val callContactIntent =
+                Intent(Intent.ACTION_DIAL).apply {
+                    val phone = crime.phone
+                    data = Uri.parse("tel:$phone")
+                }
+            startActivity(callContactIntent)
         }
 
         buttonReport.setOnClickListener {
@@ -276,6 +274,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         if(crime.suspect.isNotEmpty()) {
             suspectButton.text = crime.suspect
         }
+        suspectPhoneButton.text = crime.phone
     }
 
     private fun getCrimeReport(): String {
@@ -302,5 +301,27 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         findNavController().navigate(action)
     }
 
+
+    private fun checkPermissionReadContacts() {
+        when{
+            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
+                    == PackageManager.PERMISSION_GRANTED -> {
+                Toast.makeText(requireContext(), "Read contacts is run", Toast.LENGTH_SHORT).show()
+                    }
+            else -> {
+                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+            }
+        }
+    }
+
+    private fun registerPermissionListener() {
+        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if(it) {
+                Toast.makeText(requireContext(), "Permission enablied", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
 }
