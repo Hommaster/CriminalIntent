@@ -177,14 +177,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             redirectionToListClasses()
             crimeDetailViewModel.deleteCrime(crime)
         }
-//
-//        suspectButton.apply {
-//            val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
-//
-//            setOnClickListener {
-//                resultLaunch.launch(pickContactIntent)
-//            }
-//        }
+
         suspectButton.setOnClickListener {
             checkPermissionReadContacts()
         }
@@ -226,8 +219,8 @@ class CrimeFragment: Fragment(), FragmentResultListener {
                 }
             }
         )
-        childFragmentManager.setFragmentResultListener(REQUEST_DATE, viewLifecycleOwner, this)
-        childFragmentManager.setFragmentResultListener(REQUEST_DATE_1, viewLifecycleOwner, this)
+        createChildFM(REQUEST_DATE)
+        createChildFM(REQUEST_DATE_1)
     }
 
     override fun onStart() {
@@ -303,13 +296,17 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         findNavController().navigate(action)
     }
 
+    private fun redirectionToContactsPhone(){
+        val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+        resultLaunch.launch(pickContactIntent)
+    }
+
 
     private fun checkPermissionReadContacts() {
         when{
             ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
                     == PackageManager.PERMISSION_GRANTED -> {
-                val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
-                resultLaunch.launch(pickContactIntent)
+                redirectionToContactsPhone()
                     }
             else -> {
                 permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
@@ -320,13 +317,16 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     private fun registerPermissionListener() {
         permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){
             if(it) {
-                val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
-                resultLaunch.launch(pickContactIntent)
+                redirectionToContactsPhone()
             } else {
                 Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
             }
         }
 
+    }
+
+    private fun createChildFM(requestDate: String) {
+        childFragmentManager.setFragmentResultListener(requestDate, viewLifecycleOwner, this)
     }
 
 }
