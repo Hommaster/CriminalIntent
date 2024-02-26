@@ -131,7 +131,6 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         //create new crime with crimeLiveData crimeID
         crimeDetailViewModel.loadCrime(crimeID)
         registerPermissionListener()
-        checkPermissionReadContacts()
     }
 
     @SuppressLint("MissingInflatedId")
@@ -178,13 +177,16 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             redirectionToListClasses()
             crimeDetailViewModel.deleteCrime(crime)
         }
-
-        suspectButton.apply {
-            val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
-
-            setOnClickListener {
-                resultLaunch.launch(pickContactIntent)
-            }
+//
+//        suspectButton.apply {
+//            val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+//
+//            setOnClickListener {
+//                resultLaunch.launch(pickContactIntent)
+//            }
+//        }
+        suspectButton.setOnClickListener {
+            checkPermissionReadContacts()
         }
 
         suspectPhoneButton.setOnClickListener {
@@ -306,7 +308,8 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         when{
             ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
                     == PackageManager.PERMISSION_GRANTED -> {
-                Toast.makeText(requireContext(), "Read contacts is run", Toast.LENGTH_SHORT).show()
+                val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+                resultLaunch.launch(pickContactIntent)
                     }
             else -> {
                 permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
@@ -315,13 +318,15 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     }
 
     private fun registerPermissionListener() {
-        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){
             if(it) {
-                Toast.makeText(requireContext(), "Permission enablied", Toast.LENGTH_SHORT).show()
+                val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+                resultLaunch.launch(pickContactIntent)
             } else {
                 Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
             }
         }
+
     }
 
 }
