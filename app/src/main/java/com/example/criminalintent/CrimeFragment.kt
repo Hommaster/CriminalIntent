@@ -30,11 +30,7 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
-
-private const val REQUEST_DATE = "requestDate"
-private const val REQUEST_DATE_1 = "requestDate1"
-
-private const val DATE_FORMAT = "EEE, MMM, dd"
+import com.example.criminalintent.constance.Constance
 
 class CrimeFragment: Fragment(), FragmentResultListener {
 
@@ -109,12 +105,12 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     //result from DatePickerFragment(Request_date) and TimePickerFragment(Request_date_1)
     override fun onFragmentResult(requestKey: String, result: Bundle) {
         when(requestKey) {
-            REQUEST_DATE -> {
+            Constance.REQUEST_DATE -> {
                 crime.date = DatePickerFragment.getSelectedDate(result)
                 updateUI()
             }
 
-            REQUEST_DATE_1 -> {
+            Constance.REQUEST_DATE_1 -> {
                 crime.date = TimePickerFragment.getSelectedDate(result)
                 updateUI()
             }
@@ -153,15 +149,15 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
         dateButton.setOnClickListener {
             DatePickerFragment
-                .newInstance(REQUEST_DATE, crime.date)
-                .show(childFragmentManager, REQUEST_DATE)
+                .newInstance(Constance.REQUEST_DATE, crime.date)
+                .show(childFragmentManager, Constance.REQUEST_DATE)
 
         }
 
         timeButton.setOnClickListener {
             TimePickerFragment
-                .newInstance(crime.date, REQUEST_DATE_1)
-                .show(childFragmentManager, REQUEST_DATE_1)
+                .newInstance(crime.date, Constance.REQUEST_DATE_1)
+                .show(childFragmentManager, Constance.REQUEST_DATE_1)
         }
 
         sendResultButton.setOnClickListener {
@@ -219,8 +215,8 @@ class CrimeFragment: Fragment(), FragmentResultListener {
                 }
             }
         )
-        createChildFM(REQUEST_DATE)
-        createChildFM(REQUEST_DATE_1)
+        createChildFM(Constance.REQUEST_DATE)
+        createChildFM(Constance.REQUEST_DATE_1)
     }
 
     override fun onStart() {
@@ -285,7 +281,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             getString(R.string.crime_report_suspect, crime.suspect)
         }
 
-        val dateString: String = DateFormat.format(DATE_FORMAT, crime.date).toString()
+        val dateString: String = DateFormat.format(Constance.DATE_FORMAT, crime.date).toString()
 
         return getString(R.string.crime_report, crime.title, dateString, solvedString, suspectString)
 

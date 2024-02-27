@@ -3,19 +3,18 @@ package com.example.criminalintent
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.Room
+import com.example.criminalintent.constance.Constance
 import com.example.criminalintent.database.CrimeDatabase
 import com.example.criminalintent.database.migration_2_3
 import java.util.UUID
 import java.util.concurrent.Executors
-
-private const val DATABASE_NAME = "crime-database"
 
 class CrimeRepository private constructor(context: Context) {
 
     private val database : CrimeDatabase = Room.databaseBuilder(
         context.applicationContext,
         CrimeDatabase::class.java,
-        DATABASE_NAME
+        Constance.DATABASE_NAME
     ).addMigrations(migration_2_3)
         .build()
 
