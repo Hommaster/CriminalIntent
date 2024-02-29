@@ -11,4 +11,5 @@ data class Crime(@PrimaryKey val id: UUID = UUID.randomUUID(),
                  var date: Date = Date(),
                  var isSolved: Boolean = false,
                  var suspect: String = "",
-    var phone: String = "")
+    var phone: String = "",
+    var photoFileName: String? = null)

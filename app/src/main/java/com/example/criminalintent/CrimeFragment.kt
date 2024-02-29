@@ -27,10 +27,15 @@ import java.util.Locale
 import java.util.UUID
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.example.criminalintent.constance.Constance
+import java.io.File
+import java.util.Date
 
 class CrimeFragment: Fragment(), FragmentResultListener {
 
@@ -48,12 +53,16 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     private lateinit var suspectButton: Button
     private lateinit var suspectPhoneButton: Button
 
+    private lateinit var photoButton: ImageButton
+    private lateinit var photoView: ImageView
+
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this)[CrimeDetailViewModel::class.java]
     }
 
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
 
+    //result from Contacts: name and number of contacts
     private val resultLaunch = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result: ActivityResult ->
         if(result.resultCode == Activity.RESULT_OK) {
@@ -102,7 +111,18 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         }
     }
 
+    private val takePhotoLaunch = registerForActivityResult(ActivityResultContracts.TakePicture())
+    { didTakePhoto: Boolean ->
+        if(didTakePhoto && photoName != null) {
+            crime.photoFileName = photoName
+            crimeDetailViewModel.saveCrime(crime)
+        }
+    }
+
+    private var photoName: String? = null
+
     //result from DatePickerFragment(Request_date) and TimePickerFragment(Request_date_1)
+    //**result from Camera**
     override fun onFragmentResult(requestKey: String, result: Bundle) {
         when(requestKey) {
             Constance.REQUEST_DATE -> {
@@ -145,7 +165,10 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
         buttonReport = view.findViewById(R.id.crime_report) as Button
         suspectButton = view.findViewById(R.id.crime_suspect) as Button
-        suspectPhoneButton = view.findViewById(R.id.crime_suspect_phone)
+        suspectPhoneButton = view.findViewById(R.id.crime_suspect_phone) as Button
+
+        photoButton = view.findViewById(R.id.crime_camera) as ImageButton
+        photoView = view.findViewById(R.id.crime_photo) as ImageView
 
         dateButton.setOnClickListener {
             DatePickerFragment
@@ -196,6 +219,18 @@ class CrimeFragment: Fragment(), FragmentResultListener {
                 val chooserIntent = Intent.createChooser(intent, getString(R.string.crime_report))
                 startActivity(chooserIntent)
             }
+        }
+
+        photoButton.setOnClickListener{
+            photoName = "IMG_${Date()}.JPG"
+            val photoFile = File(requireContext().applicationContext.filesDir, photoName)
+
+            val photoUri = FileProvider.getUriForFile(
+                requireContext(),
+                "com.example.criminalintent.fileprovider",
+                photoFile
+            )
+            takePhotoLaunch.launch(photoUri)
         }
 
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
