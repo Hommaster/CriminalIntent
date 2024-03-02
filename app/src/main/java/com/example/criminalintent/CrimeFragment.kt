@@ -33,7 +33,11 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.doOnLayout
 import com.example.criminalintent.constance.Constance
+import com.example.criminalintent.dialogFragment.DatePickerFragment
+import com.example.criminalintent.dialogFragment.TimePickerFragment
+import com.example.criminalintent.utils.getScaledBitmap
 import java.io.File
 import java.util.Date
 
@@ -111,6 +115,14 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         }
     }
 
+    private val selectSuspect = registerForActivityResult(
+        ActivityResultContracts.PickContact()
+    ) { uri: Uri? ->
+        uri?.let {
+            parseContactSelection(it)
+        }
+    }
+
     private val takePhotoLaunch = registerForActivityResult(ActivityResultContracts.TakePicture())
     { didTakePhoto: Boolean ->
         if(didTakePhoto && photoName != null) {
@@ -156,19 +168,19 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_crime, container, false)
-        titleField = view.findViewById(R.id.crime_title) as EditText
-        dateButton = view.findViewById(R.id.crime_date) as Button
-        timeButton = view.findViewById(R.id.crime_time) as Button
-        sendResultButton = view.findViewById(R.id.create_button) as Button
-        returnWithoutSaving = view.findViewById(R.id.button_return_without_saving) as Button
-        buttonDelete = view.findViewById(R.id.button_delete_this_classes) as Button
+        titleField = view.findViewById<EditText>(R.id.crime_title)
+        dateButton = view.findViewById<Button>(R.id.crime_date)
+        timeButton = view.findViewById<Button>(R.id.crime_time)
+        sendResultButton = view.findViewById<Button>(R.id.create_button)
+        returnWithoutSaving = view.findViewById<Button>(R.id.button_return_without_saving)
+        buttonDelete = view.findViewById<Button>(R.id.button_delete_this_classes)
 
-        buttonReport = view.findViewById(R.id.crime_report) as Button
-        suspectButton = view.findViewById(R.id.crime_suspect) as Button
-        suspectPhoneButton = view.findViewById(R.id.crime_suspect_phone) as Button
+        buttonReport = view.findViewById<Button>(R.id.crime_report)
+        suspectButton = view.findViewById<Button>(R.id.crime_suspect)
+        suspectPhoneButton = view.findViewById<Button>(R.id.crime_suspect_phone)
 
-        photoButton = view.findViewById(R.id.crime_camera) as ImageButton
-        photoView = view.findViewById(R.id.crime_photo) as ImageView
+        photoButton = view.findViewById<ImageButton>(R.id.crime_camera)
+        photoView = view.findViewById<ImageView>(R.id.crime_photo)
 
         dateButton.setOnClickListener {
             DatePickerFragment
@@ -223,7 +235,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
         photoButton.setOnClickListener{
             photoName = "IMG_${Date()}.JPG"
-            val photoFile = File(requireContext().applicationContext.filesDir, photoName)
+            val photoFile = File(requireContext().applicationContext.filesDir, photoName.toString())
 
             val photoUri = FileProvider.getUriForFile(
                 requireContext(),
@@ -233,7 +245,12 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             takePhotoLaunch.launch(photoUri)
         }
 
-        solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
+        photoView.setOnClickListener{
+            val action = CrimeFragmentDirections.actionCrimeFragmentToPictureDialogFragment(crime.photoFileName!!)
+            findNavController().navigate(action)
+        }
+
+        solvedCheckBox = view.findViewById<CheckBox>(R.id.crime_solved)
 
         return view
     }
@@ -301,6 +318,8 @@ class CrimeFragment: Fragment(), FragmentResultListener {
             suspectButton.text = crime.suspect
         }
         suspectPhoneButton.text = crime.phone
+
+        updatePhoto(crime.photoFileName)
     }
 
     private fun getCrimeReport(): String {
@@ -328,8 +347,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     }
 
     private fun redirectionToContactsPhone(){
-        val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
-        resultLaunch.launch(pickContactIntent)
+        selectSuspect.launch(null)
     }
 
 
@@ -358,6 +376,68 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
     private fun createChildFM(requestDate: String) {
         childFragmentManager.setFragmentResultListener(requestDate, viewLifecycleOwner, this)
+    }
+
+    private fun parseContactSelection(contactUri: Uri) {
+        val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID)
+        val queryCursor = requireActivity().contentResolver
+            .query(contactUri, queryFields, null, null, null)
+        queryCursor?.use {cursor ->
+            if(cursor.moveToFirst()) {
+                val suspect = cursor.getString(0)
+                crime.suspect = suspect
+                suspectButton.text = suspect
+                crimeDetailViewModel.saveCrime(crime)
+
+                val contactId = cursor.getString(1)
+
+                // This is the Uri to get a Phone number
+                val phoneURI = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
+
+                // phoneNumberQueryFields: a List to return the PhoneNumber Column Only
+                val phoneNumberQueryFields = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
+
+                // phoneWhereClause: A filter declaring which rows to return, formatted as an SQL WHERE clause (excluding the WHERE itself)
+                val phoneWhereSanya = "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?"
+
+                val phoneQueryParameters = arrayOf(contactId)
+
+                val phoneCursor = phoneURI.let {
+                    requireActivity().contentResolver
+                        .query(it, phoneNumberQueryFields, phoneWhereSanya, phoneQueryParameters, null)
+                }
+
+                phoneCursor.use {
+                    it?.moveToFirst()
+                    val phoneNumValue = it!!.getString(0)
+                    suspectPhoneButton.text = phoneNumValue
+                    crime.phone = phoneNumValue
+                    crimeDetailViewModel.saveCrime(crime)
+                }
+            }
+        }
+    }
+
+    private fun updatePhoto(photoFileName: String?) {
+        if(photoView.tag != photoFileName) {
+            val photoFile = photoFileName?.let {
+                File(requireContext().applicationContext.filesDir, it)
+            }
+            if(photoFile?.exists() == true) {
+                photoView.doOnLayout { measuredView ->
+                    val scaledBitmap = getScaledBitmap(
+                        photoFile.path,
+                        measuredView.width,
+                        measuredView.height
+                    )
+                    photoView.setImageBitmap(scaledBitmap)
+                    photoView.tag = photoFileName
+                }
+            } else {
+                photoView.setImageBitmap(null)
+                photoView.tag = null
+            }
+        }
     }
 
 }

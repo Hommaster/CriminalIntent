@@ -20,6 +20,7 @@
 
             <ImageView
                 android:id="@+id/crime_photo"
+                android:rotation="90"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:scaleType="centerInside"

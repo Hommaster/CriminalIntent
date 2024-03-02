@@ -24,5 +24,14 @@
         <action
             android:id="@+id/action_crimeFragment_to_crimeListFragment"
             app:destination="@id/crimeListFragment" />
+        <action
+            android:id="@+id/action_crimeFragment_to_pictureDialogFragment"
+            app:destination="@id/pictureDialogFragment" />
     </fragment>
+    <dialog
+        android:id="@+id/pictureDialogFragment"
+        android:name="com.example.criminalintent.dialogFragment.PictureDialogFragment"
+        android:label="PictureDialogFragment" >
+        <argument android:name="photoFileName" />
+    </dialog>
 </navigation>
