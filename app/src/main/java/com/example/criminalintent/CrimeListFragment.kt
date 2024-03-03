@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
@@ -22,6 +23,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.criminalintent.utils.getScaledBitmap
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -49,18 +52,17 @@ class CrimeListFragment: Fragment(), MenuProvider {
         val view = inflater.inflate(R.layout.fragment_crime_list, container, false)
 
         crimeRecyclerView =
-            view.findViewById(R.id.crime_recycler_view) as RecyclerView
+            view.findViewById<RecyclerView>(R.id.crime_recycler_view)
         crimeRecyclerView.layoutManager = LinearLayoutManager(context)
         crimeRecyclerView.adapter = adapter
 
-        textEmpty = view.findViewById(R.id.text_about_empty) as TextView
-        buttonEmpty = view.findViewById(R.id.button__for_create_first_crime) as Button
+        textEmpty = view.findViewById<TextView>(R.id.text_about_empty)
+        buttonEmpty = view.findViewById<Button>(R.id.button__for_create_first_crime)
 
         buttonEmpty.setOnClickListener {
             val crime = Crime()
             crimeListViewModel.addCrime(crime)
-            val action = CrimeListFragmentDirections.actionCrimeListFragmentToCrimeFragment(crime.id.toString())
-            findNavController().navigate(action)
+            createCrimeIntent(crime)
         }
 
         return view
@@ -126,6 +128,8 @@ class CrimeListFragment: Fragment(), MenuProvider {
         private val dateTextView: TextView = itemView.findViewById(R.id.crime_date)
         private val solvedImageView: ImageView = itemView.findViewById(R.id.solved_crime1)
 
+        private val photoView: ImageView = itemView.findViewById(R.id.crime_photo_list)
+
         init {
             itemView.setOnClickListener(this)
         }
@@ -143,6 +147,25 @@ class CrimeListFragment: Fragment(), MenuProvider {
             val simpleDateFormat = SimpleDateFormat("EE, MMM, dd, yyyy, HH:mm:ss", Locale("ru"))
             val date : String = simpleDateFormat.format(this.crime.date).toString()
             dateTextView.text = date
+
+            if(photoView.tag != crime.photoFileName) {
+                val photoFile = File(requireContext().applicationContext.filesDir, crime.photoFileName.toString())
+
+                if(photoFile.exists()) {
+                    photoView.doOnLayout {
+                        val scaledBitmap = getScaledBitmap(
+                            photoFile.path,
+                            it.width,
+                            it.height
+                        )
+                        photoView.setImageBitmap(scaledBitmap)
+                        photoView.tag = crime.photoFileName
+                    }
+                } else {
+                    photoView.setImageBitmap(null)
+                    photoView.tag = null
+                }
+            }
         }
 
         override fun onClick(v: View?) {

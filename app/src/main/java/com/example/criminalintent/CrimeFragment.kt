@@ -1,7 +1,6 @@
 package com.example.criminalintent
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -15,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
@@ -55,7 +53,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
     private lateinit var buttonReport: Button
     private lateinit var suspectButton: Button
-    private lateinit var suspectPhoneButton: Button
+    private lateinit var suspectPhoneButton: ImageButton
 
     private lateinit var photoButton: ImageButton
     private lateinit var photoView: ImageView
@@ -65,55 +63,6 @@ class CrimeFragment: Fragment(), FragmentResultListener {
     }
 
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
-
-    //result from Contacts: name and number of contacts
-    private val resultLaunch = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        result: ActivityResult ->
-        if(result.resultCode == Activity.RESULT_OK) {
-            val contactUri: Uri = result.data?.data!!
-            val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID)
-            val cursor = contactUri.let {
-                requireActivity().contentResolver
-                    .query(it, queryFields, null, null, null)
-            }!!
-            cursor.use {
-                if(it.count == 0) {
-                    return@registerForActivityResult
-                }
-                it.moveToFirst()
-                val suspect = it.getString(0)
-                crime.suspect = suspect.toString()
-                suspectButton.text = suspect
-                crimeDetailViewModel.saveCrime(crime)
-
-                val contactId = it.getString(1)
-
-                // This is the Uri to get a Phone number
-                val phoneURI = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
-
-                // phoneNumberQueryFields: a List to return the PhoneNumber Column Only
-                val phoneNumberQueryFields = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
-
-                // phoneWhereClause: A filter declaring which rows to return, formatted as an SQL WHERE clause (excluding the WHERE itself)
-                val phoneWhereSanya = "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?"
-
-                val phoneQueryParameters = arrayOf(contactId)
-
-                val phoneCursor = phoneURI.let {
-                    requireActivity().contentResolver
-                        .query(it, phoneNumberQueryFields, phoneWhereSanya, phoneQueryParameters, null)
-                }
-
-                phoneCursor.use {
-                    it?.moveToFirst()
-                    val phoneNumValue = it!!.getString(0)
-                    suspectPhoneButton.text = phoneNumValue
-                    crime.phone = phoneNumValue
-                    crimeDetailViewModel.saveCrime(crime)
-                }
-            }
-        }
-    }
 
     private val selectSuspect = registerForActivityResult(
         ActivityResultContracts.PickContact()
@@ -177,7 +126,7 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
         buttonReport = view.findViewById<Button>(R.id.crime_report)
         suspectButton = view.findViewById<Button>(R.id.crime_suspect)
-        suspectPhoneButton = view.findViewById<Button>(R.id.crime_suspect_phone)
+        suspectPhoneButton = view.findViewById<ImageButton>(R.id.crime_suspect_phone)
 
         photoButton = view.findViewById<ImageButton>(R.id.crime_camera)
         photoView = view.findViewById<ImageView>(R.id.crime_photo)
@@ -317,7 +266,6 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         if(crime.suspect.isNotEmpty()) {
             suspectButton.text = crime.suspect
         }
-        suspectPhoneButton.text = crime.phone
 
         updatePhoto(crime.photoFileName)
     }
@@ -410,7 +358,6 @@ class CrimeFragment: Fragment(), FragmentResultListener {
                 phoneCursor.use {
                     it?.moveToFirst()
                     val phoneNumValue = it!!.getString(0)
-                    suspectPhoneButton.text = phoneNumValue
                     crime.phone = phoneNumValue
                     crimeDetailViewModel.saveCrime(crime)
                 }
