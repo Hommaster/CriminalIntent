@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ПреступноеНамерение</string>
+    <string name="crime_title_hint">Введите название преступления.</string>
+    <string name="crime_title_label">Заголовок</string>
+    <string name="crime_details_label">Подробности</string>
+    <string name="crime_solved_label">Решено</string>
+    <string name="button_cops">Позвоните в полицию</string>
+    <string name="crime_title">Название преступления</string>
+    <string name="crime_date">Дата преступления</string>
+    <string name="new_crime">Новое преступление</string>
+    <string name="create_fragment">Создать</string>
+    <string name="back_without_save">Вернуться без сохранения</string>
+    <string name="delete_classes">Удалить это преступление</string>
+    <string name="text_about_isEmptyCrime">Список преступных намерений пуст..</string>
+    <string name="first_button">Составьте свой первый отчет о преступлении</string>
+    <string name="crime_suspect_text">Выберите подозреваемого</string>
+    <string name="crime_report_text">Отправить отчет о преступлении</string>
+    <string name="crime_suspect_phone">Вызов</string>
+    <string name="crime_report">%1$s! Преступление было обнаружено %2$s. %3$s и %4$s</string>
+    <string name="crime_report_solved">Дело решено</string>
+    <string name="crime_report_unsolved">Дело не раскрыто</string>
+    <string name="crime_report_no_suspect">нет подозреваемого</string>
+    <string name="crime_report_suspect">подозреваемый – %1$s</string>
+    <string name="crime_report_subject">Отчет о преступном намерении</string>
+    <string name="send_report">Отправить сообщение о преступлении через</string>
+</resources>

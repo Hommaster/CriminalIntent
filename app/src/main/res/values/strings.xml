@@ -11,8 +11,8 @@
     <string name="create_fragment">Create</string>
     <string name="back_without_save">Return without saving</string>
     <string name="delete_classes">Delete this crime</string>
-    <string name="text_about_isEmptyCrime">Lists of criminal intent is empty..</string>
-    <string name="first_button">Create my first crime!</string>
+    <string name="text_about_isEmptyCrime">List of criminal intent is empty..</string>
+    <string name="first_button">Make your first crime report</string>
     <string name="crime_suspect_text">Choose suspect</string>
     <string name="crime_report_text">Send Crime Report</string>
     <string name="crime_suspect_phone">Call</string>
