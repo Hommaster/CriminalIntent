@@ -16,7 +16,6 @@ import android.widget.CheckBox
 import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentResultListener
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -25,6 +24,7 @@ import java.util.Locale
 import java.util.UUID
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Toast
@@ -32,6 +32,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.doOnLayout
+import androidx.fragment.app.setFragmentResultListener
 import com.example.criminalintent.constance.Constance
 import com.example.criminalintent.dialogFragment.DatePickerFragment
 import com.example.criminalintent.dialogFragment.TimePickerFragment
@@ -39,7 +40,7 @@ import com.example.criminalintent.utils.getScaledBitmap
 import java.io.File
 import java.util.Date
 
-class CrimeFragment: Fragment(), FragmentResultListener {
+class CrimeFragment: Fragment(){
 
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
@@ -82,22 +83,6 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
     private var photoName: String? = null
 
-    //result from DatePickerFragment(Request_date) and TimePickerFragment(Request_date_1)
-    //**result from Camera**
-    override fun onFragmentResult(requestKey: String, result: Bundle) {
-        when(requestKey) {
-            Constance.REQUEST_DATE -> {
-                crime.date = DatePickerFragment.getSelectedDate(result)
-                updateUI()
-            }
-
-            Constance.REQUEST_DATE_1 -> {
-                crime.date = TimePickerFragment.getSelectedDate(result)
-                updateUI()
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         crime = Crime()
@@ -132,16 +117,13 @@ class CrimeFragment: Fragment(), FragmentResultListener {
         photoView = view.findViewById<ImageView>(R.id.crime_photo)
 
         dateButton.setOnClickListener {
-            DatePickerFragment
-                .newInstance(Constance.REQUEST_DATE, crime.date)
-                .show(childFragmentManager, Constance.REQUEST_DATE)
-
+            val action = CrimeFragmentDirections.actionCrimeFragmentToDatePickerFragment(crime.date)
+            findNavController().navigate(action)
         }
 
         timeButton.setOnClickListener {
-            TimePickerFragment
-                .newInstance(crime.date, Constance.REQUEST_DATE_1)
-                .show(childFragmentManager, Constance.REQUEST_DATE_1)
+            val action = CrimeFragmentDirections.actionCrimeFragmentToTimePickerFragment(crime.date)
+            findNavController().navigate(action)
         }
 
         sendResultButton.setOnClickListener {
@@ -216,8 +198,32 @@ class CrimeFragment: Fragment(), FragmentResultListener {
                 }
             }
         )
-        createChildFM(Constance.REQUEST_DATE)
-        createChildFM(Constance.REQUEST_DATE_1)
+
+        setFragmentResultListener(
+            DatePickerFragment.REQUEST_KEY_DATE,
+        ) { _, bundle ->
+            val newDate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bundle.getSerializable(DatePickerFragment.REQUEST_BUNDLE_DATE, Date::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                bundle.getSerializable(DatePickerFragment.REQUEST_BUNDLE_DATE) as Date
+            }
+            crime.date = newDate!!
+            crimeDetailViewModel.saveCrime(crime)
+        }
+
+        setFragmentResultListener(
+            TimePickerFragment.REQUEST_KEY_TIME,
+        ) { _, bundle ->
+            val newDate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bundle.getSerializable(TimePickerFragment.REQUEST_BUNDLE_TIME, Date::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                bundle.getSerializable(TimePickerFragment.REQUEST_BUNDLE_TIME) as Date
+            }
+            crime.date = newDate!!
+            crimeDetailViewModel.saveCrime(crime)
+        }
     }
 
     override fun onStart() {
@@ -322,9 +328,6 @@ class CrimeFragment: Fragment(), FragmentResultListener {
 
     }
 
-    private fun createChildFM(requestDate: String) {
-        childFragmentManager.setFragmentResultListener(requestDate, viewLifecycleOwner, this)
-    }
 
     private fun parseContactSelection(contactUri: Uri) {
         val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID)

@@ -6,8 +6,10 @@ import android.os.Build
 import android.os.Bundle
 import android.widget.DatePicker
 import androidx.annotation.RequiresApi
+import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
+import androidx.navigation.fragment.navArgs
 import com.example.criminalintent.constance.Constance
 import java.sql.Timestamp
 import java.time.LocalDateTime
@@ -17,15 +19,12 @@ import java.util.Date
 
 class DatePickerFragment: DialogFragment() {
 
+    private val args: DatePickerFragmentArgs by navArgs()
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val date = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getSerializable(Constance.ARG_DATE, Date::class.java) as Date
-        } else {
-            arguments?.getSerializable(Constance.ARG_DATE) as Date
-        }
         val calendar = Calendar.getInstance()
-        calendar.time = date
+        calendar.time = args.crimeDate
 
         val initialYear = calendar.get(Calendar.YEAR)
         val initialMonth = calendar.get(Calendar.MONTH)
@@ -48,12 +47,7 @@ class DatePickerFragment: DialogFragment() {
             val instant = Timestamp.valueOf(current.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).toInstant()
             val dateRes = Date.from(instant)
 
-            val result = Bundle().apply {
-                putSerializable(Constance.RESULT_DATE_KEY, dateRes)
-            }
-
-            val resultRequestCode = requireArguments().getString(Constance.ARG_REQUEST_CODE, "")
-            setFragmentResult(resultRequestCode, result)
+            setFragmentResult(REQUEST_KEY_DATE, bundleOf(REQUEST_BUNDLE_DATE to dateRes))
         }
 
         return DatePickerDialog(
@@ -67,23 +61,8 @@ class DatePickerFragment: DialogFragment() {
 
 
     companion object {
-
-        fun newInstance(requestCode: String, date: Date): DatePickerFragment {
-            val args = Bundle().apply {
-                putSerializable(Constance.ARG_DATE, date)
-                putString(Constance.ARG_REQUEST_CODE, requestCode)
-            }
-
-            return DatePickerFragment().apply {
-                arguments = args
-            }
-        }
-
-        fun getSelectedDate(result: Bundle) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            result.getSerializable(Constance.RESULT_DATE_KEY, Date::class.java) as Date
-        } else {
-            result.getSerializable(Constance.RESULT_DATE_KEY) as Date
-        }
+        const val REQUEST_KEY_DATE = "request_key_date"
+        const val REQUEST_BUNDLE_DATE = "request_bundle_date"
     }
 
 

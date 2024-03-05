@@ -4,12 +4,12 @@ import android.app.Dialog
 import android.app.TimePickerDialog
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.TimePicker
 import androidx.annotation.RequiresApi
+import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
-import com.example.criminalintent.constance.Constance
+import androidx.navigation.fragment.navArgs
 import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -19,17 +19,13 @@ import java.util.Date
 @Suppress("DEPRECATION")
 class TimePickerFragment: DialogFragment() {
 
+    private val args: TimePickerFragmentArgs by navArgs()
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
-        val date: Date = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getSerializable(Constance.ARG_TIME, Date::class.java) as Date
-        } else {
-            arguments?.getSerializable(Constance.ARG_TIME) as Date
-        }
-
         val calendar = Calendar.getInstance()
-        calendar.time = date
+        calendar.time = args.crimeDateForTime
 
         val initialYear = calendar.get(Calendar.YEAR)
         val initialMonth = calendar.get(Calendar.MONTH) + 1
@@ -54,14 +50,7 @@ class TimePickerFragment: DialogFragment() {
             val instant = Timestamp.valueOf(current.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).toInstant()
             val dateRes = Date.from(instant)
 
-            Log.d("TPFdate", "$dateRes")
-
-            val result = Bundle().apply {
-                putSerializable(Constance.RESULT_TIME_KEY, dateRes)
-            }
-
-            val resultRequestCode = requireArguments().getString(Constance.ARG_REQUEST_CODE_TIME, "")
-            setFragmentResult(resultRequestCode, result)
+            setFragmentResult(REQUEST_KEY_TIME, bundleOf(REQUEST_BUNDLE_TIME to dateRes))
 
         }
 
@@ -75,22 +64,8 @@ class TimePickerFragment: DialogFragment() {
     }
 
     companion object {
-        fun newInstance(date: Date, requestCode: String): TimePickerFragment {
-            val args = Bundle().apply {
-                putSerializable(Constance.ARG_TIME, date)
-                putString(Constance.ARG_REQUEST_CODE_TIME, requestCode)
-            }
-
-            return TimePickerFragment().apply {
-                arguments = args
-            }
-        }
-
-        fun getSelectedDate(result: Bundle) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            result.getSerializable(Constance.RESULT_TIME_KEY, Date::class.java) as Date
-        } else {
-            result.getSerializable(Constance.RESULT_TIME_KEY) as Date
-        }
+        const val REQUEST_KEY_TIME = "request_key_time"
+        const val REQUEST_BUNDLE_TIME = "request_bundle_time"
     }
 
 }

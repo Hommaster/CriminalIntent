@@ -27,11 +27,33 @@
         <action
             android:id="@+id/action_crimeFragment_to_pictureDialogFragment"
             app:destination="@id/pictureDialogFragment" />
+        <action
+            android:id="@+id/action_crimeFragment_to_datePickerFragment"
+            app:destination="@id/datePickerFragment" />
+        <action
+            android:id="@+id/action_crimeFragment_to_timePickerFragment"
+            app:destination="@id/timePickerFragment" />
     </fragment>
     <dialog
         android:id="@+id/pictureDialogFragment"
         android:name="com.example.criminalintent.dialogFragment.PictureDialogFragment"
         android:label="PictureDialogFragment" >
         <argument android:name="photoFileName" />
+    </dialog>
+    <dialog
+        android:id="@+id/datePickerFragment"
+        android:name="com.example.criminalintent.dialogFragment.DatePickerFragment"
+        android:label="DatePickerFragment" >
+        <argument
+            android:name="crimeDate"
+            app:argType="java.util.Date" />
+    </dialog>
+    <dialog
+        android:id="@+id/timePickerFragment"
+        android:name="com.example.criminalintent.dialogFragment.TimePickerFragment"
+        android:label="TimePickerFragment" >
+        <argument
+            android:name="crimeDateForTime"
+            app:argType="java.util.Date" />
     </dialog>
 </navigation>
