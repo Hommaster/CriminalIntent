@@ -20,7 +20,7 @@
         android:label="CrimeFragment" >
         <argument
             android:name="myArg"
-            />
+            app:argType="java.util.UUID" />
         <action
             android:id="@+id/action_crimeFragment_to_crimeListFragment"
             app:destination="@id/crimeListFragment" />

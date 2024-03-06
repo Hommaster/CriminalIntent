@@ -7,22 +7,23 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.example.criminalintent.Crime
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 @Dao
 interface CrimeDAO {
     @Query("SELECT * FROM crime")
-    fun getCrimes(): LiveData<List<Crime>>
+    fun getCrimes(): Flow<List<Crime>>
 
     @Query("SELECT * FROM crime WHERE id=(:id)")
-    fun getCrime(id: UUID): LiveData<Crime?>
+    suspend fun getCrime(id: UUID): Crime
 
     @Update
-    fun updateCrime(crime: Crime)
+    suspend fun updateCrime(crime: Crime)
 
     @Insert
-    fun addCrime(crime: Crime)
+    suspend fun addCrime(crime: Crime)
 
     @Delete
-    fun deleteCrime(crime: Crime)
+    suspend fun deleteCrime(crime: Crime)
 }
