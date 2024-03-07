@@ -1,6 +1,5 @@
 package com.example.criminalintent
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -8,32 +7,18 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import com.example.criminalintent.databinding.FragmentCrimeListBinding
-import com.example.criminalintent.utils.getScaledBitmap
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.io.File
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import java.util.UUID
 
 class CrimeListFragment: Fragment(), MenuProvider {
@@ -51,7 +36,7 @@ class CrimeListFragment: Fragment(), MenuProvider {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentCrimeListBinding.inflate(inflater, container, false)
         binding.crimeRecyclerView.layoutManager = LinearLayoutManager(context)
         return binding.root
@@ -116,24 +101,5 @@ class CrimeListFragment: Fragment(), MenuProvider {
             )
         }
     }
-
-//    private fun updateUI(crimes: List<Crime>) {
-//        if(crimes.isNotEmpty()) {
-//            adapter = CrimeAdapter(crimes)
-//            crimeRecyclerView.adapter = adapter
-//            crimeRecyclerView.visibility = View.VISIBLE
-//            textEmpty.visibility = View.GONE
-//            buttonEmpty.visibility = View.GONE
-//        } else {
-//            crimeRecyclerView.visibility = View.GONE
-//            textEmpty.visibility = View.VISIBLE
-//            buttonEmpty.visibility = View.VISIBLE
-//        }
-//    }
-
-//    private fun createCrimeIntent(crime: Crime) {
-//        val action = CrimeListFragmentDirections.actionCrimeListFragmentToCrimeFragment(crime.id.toString())
-//        findNavController().navigate(action)
-//    }
 
 }

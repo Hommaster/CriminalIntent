@@ -1,45 +1,39 @@
 package com.example.criminalintent
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
-import android.text.Editable
-import android.text.TextWatcher
 import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import java.text.SimpleDateFormat
 import java.util.Locale
-import java.util.UUID
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
-import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.doOnLayout
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
 import com.example.criminalintent.constance.Constance
 import com.example.criminalintent.databinding.FragmentCrimeBinding
 import com.example.criminalintent.dialogFragment.DatePickerFragment
 import com.example.criminalintent.dialogFragment.TimePickerFragment
 import com.example.criminalintent.utils.getScaledBitmap
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Date
 
@@ -67,7 +61,7 @@ class CrimeFragment: Fragment(){
         }
     }
 
-    private val photoName: String? = null
+    private var photoName: String? = null
 
     private val takePhotoLaunch = registerForActivityResult(ActivityResultContracts.TakePicture())
     { didTakePhoto: Boolean ->
@@ -82,6 +76,11 @@ class CrimeFragment: Fragment(){
         registerPermissionListener()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -89,96 +88,48 @@ class CrimeFragment: Fragment(){
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCrimeBinding.inflate(inflater, container, false)
+        binding.crimeSuspect.setOnClickListener {
+            checkPermissionReadContacts()
+        }
         return binding.root
     }
-//        val view = inflater.inflate(R.layout.fragment_crime, container, false)
-//        titleField = view.findViewById<EditText>(R.id.crime_title)
-//        dateButton = view.findViewById<Button>(R.id.crime_date)
-//        timeButton = view.findViewById<Button>(R.id.crime_time)
-//        sendResultButton = view.findViewById(R.id.create_button)
-//        returnWithoutSaving = view.findViewById<Button>(R.id.button_return_without_saving)
-//        buttonDelete = view.findViewById<Button>(R.id.button_delete_this_classes)
-//
-//        buttonReport = view.findViewById<Button>(R.id.crime_report)
-//        suspectButton = view.findViewById<Button>(R.id.crime_suspect)
-//        suspectPhoneButton = view.findViewById<ImageButton>(R.id.crime_suspect_phone)
-//
-//        photoButton = view.findViewById<ImageButton>(R.id.crime_camera)
-//        photoView = view.findViewById<ImageView>(R.id.crime_photo)
-//
-//        dateButton.setOnClickListener {
-//            val action = CrimeFragmentDirections.actionCrimeFragmentToDatePickerFragment(crime.date)
-//            findNavController().navigate(action)
-//        }
-//
-//        timeButton.setOnClickListener {
-//            val action = CrimeFragmentDirections.actionCrimeFragmentToTimePickerFragment(crime.date)
-//            findNavController().navigate(action)
-//        }
-//
-//        sendResultButton.setOnClickListener {
-//            crimeDetailViewModel.saveCrime(crime)
-//            redirectionToListClasses()
-//        }
-//
-//        returnWithoutSaving.setOnClickListener {
-//            redirectionToListClasses()
-//        }
-//
-//        buttonDelete.setOnClickListener {
-//            redirectionToListClasses()
-//            crimeDetailViewModel.deleteCrime(crime)
-//        }
-//
-//        suspectButton.setOnClickListener {
-//            checkPermissionReadContacts()
-//        }
-//
-//        suspectPhoneButton.setOnClickListener {
-//            val callContactIntent =
-//                Intent(Intent.ACTION_DIAL).apply {
-//                    val phone = crime.phone
-//                    data = Uri.parse("tel:$phone")
-//                }
-//            startActivity(callContactIntent)
-//        }
-//
-//        buttonReport.setOnClickListener {
-//            Intent(Intent.ACTION_SEND).apply {
-//                type = "text/plain"
-//                putExtra(Intent.EXTRA_TEXT, getCrimeReport())
-//                putExtra(Intent.EXTRA_SUBJECT, R.string.crime_report_subject)
-//            }.also {intent ->
-//                val chooserIntent = Intent.createChooser(intent, getString(R.string.crime_report))
-//                startActivity(chooserIntent)
-//            }
-//        }
-//
-//        photoButton.setOnClickListener{
-//            photoName = "IMG_${Date()}.JPG"
-//            val photoFile = File(requireContext().applicationContext.filesDir, photoName.toString())
-//
-//            val photoUri = FileProvider.getUriForFile(
-//                requireContext(),
-//                "com.example.criminalintent.fileprovider",
-//                photoFile
-//            )
-//            takePhotoLaunch.launch(photoUri)
-//        }
-//
-//        photoView.setOnClickListener{
-//            val action = CrimeFragmentDirections.actionCrimeFragmentToPictureDialogFragment(crime.photoFileName!!)
-//            findNavController().navigate(action)
-//        }
-//
-//        solvedCheckBox = view.findViewById<CheckBox>(R.id.crime_solved)
-//
-//        return view
-//    }
-//
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
 
+    viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            crimeDetailViewModel.crime.collect {crime ->
+                crime?.let { updateUi(it) }
+            }
+        }
+    }
+
+    binding.apply {
+        crimeTitle.doOnTextChanged { text, _, _, _ ->
+            crimeDetailViewModel.updateCrime { oldCrime ->
+                oldCrime.copy(title = text.toString())
+            }
+        }
+
+        crimeSolved.setOnCheckedChangeListener { _, isChecked ->
+            crimeDetailViewModel.updateCrime { oldCrime ->
+                oldCrime.copy(isSolved = isChecked)
+            }
+        }
+
+        crimeCamera.setOnClickListener{
+            photoName = "IMG_${Date()}.JPG"
+            val photoFile = File(requireContext().applicationContext.filesDir, photoName.toString())
+
+            val photoUri = FileProvider.getUriForFile(
+                requireContext(),
+                "com.example.criminalintent.fileprovider",
+                photoFile
+            )
+            takePhotoLaunch.launch(photoUri)
+        }
+    }
 
     setFragmentResultListener(
         DatePickerFragment.REQUEST_KEY_DATE
@@ -191,98 +142,115 @@ class CrimeFragment: Fragment(){
         resultFromPickerFragment(TimePickerFragment.REQUEST_BUNDLE_TIME, bundle)
         }
     }
-//
-//    override fun onStart() {
-//        super.onStart()
-//
-//        val titleWatcher = object: TextWatcher {
-//            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-//
-//            }
-//
-//            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-//                crime.title = s.toString()
-//            }
-//
-//            override fun afterTextChanged(s: Editable?) {
-//
-//            }
-//
-//        }
-//        titleField.addTextChangedListener(titleWatcher)
-//
-//        solvedCheckBox.apply {
-//            setOnCheckedChangeListener { _, isChecked ->
-//                crime.isSolved = isChecked
-//            }
-//        }
-//
-//    }
-//
-//    private fun updateUI() {
-//        titleField.setText(crime.title)
-//
-//        val simpleDateFormat = SimpleDateFormat("EE, MMM, dd, yyyy", Locale("ru"))
-//        val date : String = simpleDateFormat.format(this.crime.date).toString()
-//        dateButton.text = date
-//
-//        val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale("ru"))
-//        val time : String = simpleTimeFormat.format(this.crime.date).toString()
-//        timeButton.text = time
-//
-//        solvedCheckBox.apply {
-//            isChecked = crime.isSolved
-//            jumpDrawablesToCurrentState()
-//        }
-//
-//        if(crime.suspect.isNotEmpty()) {
-//            suspectButton.text = crime.suspect
-//        }
-//
-//        updatePhoto(crime.photoFileName)
-//    }
-//
-//    private fun getCrimeReport(): String {
-//        val solvedString = if(crime.isSolved) {
-//            getString(R.string.crime_report_solved)
-//        } else {
-//            getString(R.string.crime_report_unsolved)
-//        }
-//
-//        val suspectString: String = if(crime.suspect.isBlank()) {
-//            getString(R.string.crime_report_no_suspect)
-//        } else {
-//            getString(R.string.crime_report_suspect, crime.suspect)
-//        }
-//
-//        val dateString: String = DateFormat.format(Constance.DATE_FORMAT, crime.date).toString()
-//
-//        return getString(R.string.crime_report, crime.title, dateString, solvedString, suspectString)
-//
-//    }
-//
-//    private fun redirectionToListClasses() {
-//        val action = CrimeFragmentDirections.actionCrimeFragmentToCrimeListFragment()
-//        findNavController().navigate(action)
-//    }
-//
+    private fun updateUi(crime: Crime) {
+        binding.apply {
+            if(crimeTitle.text.toString() != crime.title) {
+                crimeTitle.setText(crime.title)
+            }
+
+            val simpleDateFormat = SimpleDateFormat("EE, MMM, dd, yyyy", Locale("ru"))
+            val date : String = simpleDateFormat.format(crime.date).toString()
+            crimeDate.text = date
+            crimeDate.setOnClickListener {
+                val action = CrimeFragmentDirections.actionCrimeFragmentToDatePickerFragment(crime.date)
+                findNavController().navigate(action)
+            }
+
+            val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale("ru"))
+            val time : String = simpleTimeFormat.format(crime.date).toString()
+            crimeTime.text = time
+            crimeTime.setOnClickListener {
+            val action = CrimeFragmentDirections.actionCrimeFragmentToTimePickerFragment(crime.date)
+            findNavController().navigate(action)
+            }
+
+            buttonDeleteThisClasses.setOnClickListener {
+                redirectionToListClasses()
+                viewLifecycleOwner.lifecycleScope.launch{
+                    crimeDetailViewModel.deleteCrime(crime)
+                }
+            }
+
+            crimeReport.setOnClickListener {
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, getCrimeReport(crime))
+                putExtra(Intent.EXTRA_SUBJECT, R.string.crime_report_subject)
+                }.also {intent ->
+                    val chooserIntent = Intent.createChooser(intent, getString(R.string.crime_report))
+                    startActivity(chooserIntent)
+                }
+            }
+
+            crimePhoto.setOnClickListener{
+                if(crime.photoFileName != null) {
+                    val action = CrimeFragmentDirections.actionCrimeFragmentToPictureDialogFragment(crime.photoFileName.toString())
+                    findNavController().navigate(action)
+                }
+            }
+
+            crimeSuspectPhone.setOnClickListener {
+                if(crime.phone.isNotEmpty()) {
+                    val callContactIntent =
+                        Intent(Intent.ACTION_DIAL).apply {
+                            val phone = crime.phone
+                            data = Uri.parse("tel:$phone")
+                        }
+                    startActivity(callContactIntent)
+                }
+            }
+
+            crimeSolved.isChecked = crime.isSolved
+
+            if(crime.suspect.isNotEmpty()) {
+                crimeSuspect.text = crime.suspect
+            }
+
+            updatePhoto(crime.photoFileName)
+        }
+    }
+
+    private fun getCrimeReport(crime:Crime): String {
+        val solvedString = if(crime.isSolved) {
+            getString(R.string.crime_report_solved)
+        } else {
+            getString(R.string.crime_report_unsolved)
+        }
+
+        val suspectString: String = if(crime.suspect.isBlank()) {
+            getString(R.string.crime_report_no_suspect)
+        } else {
+            getString(R.string.crime_report_suspect, crime.suspect)
+        }
+
+        val dateString: String = DateFormat.format(Constance.DATE_FORMAT, crime.date).toString()
+
+        return getString(R.string.crime_report, crime.title, dateString, solvedString, suspectString)
+
+    }
+
+    private fun redirectionToListClasses() {
+        val action = CrimeFragmentDirections.actionCrimeFragmentToCrimeListFragment()
+        findNavController().navigate(action)
+    }
+
     private fun redirectionToContactsPhone(){
         selectSuspect.launch(null)
     }
-//
-//
-//    private fun checkPermissionReadContacts() {
-//        when{
-//            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
-//                    == PackageManager.PERMISSION_GRANTED -> {
-//                redirectionToContactsPhone()
-//                    }
-//            else -> {
-//                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-//            }
-//        }
-//    }
-//
+
+
+    private fun checkPermissionReadContacts() {
+        when{
+            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
+                    == PackageManager.PERMISSION_GRANTED -> {
+                redirectionToContactsPhone()
+                    }
+            else -> {
+                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+            }
+        }
+    }
+
     private fun registerPermissionListener() {
         permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){
             if(it) {
@@ -302,7 +270,7 @@ class CrimeFragment: Fragment(){
         queryCursor?.use {cursor ->
             if(cursor.moveToFirst()) {
                 val suspect = cursor.getString(0)
-                suspectButton.text = suspect
+                binding.crimeSuspect.text = suspect
                 crimeDetailViewModel.updateCrime { oldCrime ->
                     oldCrime.copy(suspect = suspect)
                 }
@@ -335,29 +303,29 @@ class CrimeFragment: Fragment(){
             }
         }
     }
-//
-//    private fun updatePhoto(photoFileName: String?) {
-//        if(photoView.tag != photoFileName) {
-//            val photoFile = photoFileName?.let {
-//                File(requireContext().applicationContext.filesDir, it)
-//            }
-//            if(photoFile?.exists() == true) {
-//                photoView.doOnLayout { measuredView ->
-//                    val scaledBitmap = getScaledBitmap(
-//                        photoFile.path,
-//                        measuredView.width,
-//                        measuredView.height
-//                    )
-//                    photoView.setImageBitmap(scaledBitmap)
-//                    photoView.tag = photoFileName
-//                }
-//            } else {
-//                photoView.setImageBitmap(null)
-//                photoView.tag = null
-//            }
-//        }
-//    }
-//
+
+    private fun updatePhoto(photoFileName: String?) {
+        if(binding.crimePhoto.tag != photoFileName) {
+            val photoFile = photoFileName?.let {
+                File(requireContext().applicationContext.filesDir, it)
+            }
+            if(photoFile?.exists() == true) {
+                binding.crimePhoto.doOnLayout { measuredView ->
+                    val scaledBitmap = getScaledBitmap(
+                        photoFile.path,
+                        measuredView.width,
+                        measuredView.height
+                    )
+                    binding.crimePhoto.setImageBitmap(scaledBitmap)
+                    binding.crimePhoto.tag = photoFileName
+                }
+            } else {
+                binding.crimePhoto.setImageBitmap(null)
+                binding.crimePhoto.tag = null
+            }
+        }
+    }
+
     private fun resultFromPickerFragment(requestBundle: String, bundle: Bundle) {
         val newDate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             bundle.getSerializable(requestBundle, Date::class.java)
